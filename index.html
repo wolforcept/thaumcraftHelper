@@ -35,12 +35,11 @@
 
     <style>
         .ui.button.element {
-            width: 300px;
-            position: relative;
+            width: 200px;
+            margin: 0;
         }
 
         .ui.button.element img {
-            margin-right: 20px;
             width: 32px;
         }
 
@@ -75,16 +74,35 @@
         }
 
         .ui.button.element.range3 {
-            background-color: rgb(187, 238, 120);
+            background-color: rgb(127, 189, 47);
         }
 
         .ui.button.element.selected {
             background-color: rgb(11, 228, 228);
         }
+
+        .ui.table {
+            background-color: #00000000;
+        }
     </style>
 </head>
 
 <body>
+    <div class="ui inverted menu" style="background-color: #485563;">
+        <div class="ui container">
+            <div class="header item">
+                <img class="logo" src="./logo.png" style="margin-right: 20px;">
+                Thaumcraft Element Path Helper
+            </div>
+        </div>
+    </div>
+
+
+    <div class="ui container">
+        <table id="buttonGrid"></table>
+        <p id="path" style="margin: 1px 0 0 3px; width: 812px; background-color: #485563;min-height: 40px;"></p>
+    </div>
+
     <script async defer>
 
         const elements = {
@@ -138,19 +156,6 @@
             Volatus: { meaning: "flight", components: ["Aer", "Motus"] },
         };
 
-        (function ($) {
-
-            jQuery.fn.extend({
-                prependClass: function (newClasses) {
-                    return this.each(function () {
-                        var currentClasses = $(this).prop("class");
-                        $(this).removeClass(currentClasses).addClass(newClasses + " " + currentClasses);
-                    });
-                }
-            });
-
-        })(jQuery);
-
         function lightSubElements(element1id, range, path) {
 
             const element1 = elements[element1id];
@@ -173,56 +178,68 @@
                     const newPath = [...path, element2id];
                     if (element2.path.length === 0 || newPath.length < element2.path.length) {
                         button2.addClass("range" + range);
-                        element2.setPath(newPath);
-                        if (range > 1) lightSubElements(element2id, range - 1, newPath);
+                        element2.path = newPath
+                        if (range > -3) lightSubElements(element2id, range - 1, newPath);
                     }
                 }
             });
         }
 
-        let i = 0;
-        Object.keys(elements).forEach(elementId => {
-            const button1 = $(`
+        function makeButton(elementId) {
+            const button = $(`
             <button class="ui button element">
                 <img src="./imgs/${elementId.toLowerCase()}.png">
                 <span class="name">${elementId}</span>
-                <span class="path">test</span>
             </button>`);
-            button1.on('click', () => {
+            button.on('click', () => {
 
                 Object.keys(elements).forEach(e => {
-                    elements[e].setPath([]);
+                    elements[e].path = [];
                     elements[e].button.removeClass("selected");
                     elements[e].button.removeClass("range3");
                     elements[e].button.removeClass("range2");
                     elements[e].button.removeClass("range1");
                 });
-                button1.addClass("selected");
+                button.addClass("selected");
                 lightSubElements(elementId, 3, [elementId]);
             });
-            elements[elementId].button = button1;
-            elements[elementId].setPath = (path) => {
-                elements[elementId].path = path;
-                const pathObj = button1.find(".path");
-                if (path.length === 0) {
-                    pathObj.removeClass("exists");
-                } else {
-                    pathObj.addClass("exists");
-                    pathObj.html(path.join("→"))
-                }
-            };
-            $("body").append(button1);
-            i++;
-            if (i % 4 == 0) $("body").append(`<br />`);
-        });
+            elements[elementId].button = button;
+            button.on("mouseenter", () => {
+                if (elements[elementId].path.length === 0) return;
+                const pathDiv = $('#path');
+                pathDiv.empty();
+                elements[elementId].path.forEach((element, index) => {
+                    pathDiv.append($(`
+                    <div class="ui label" style="margin-right:10px; background-color:transparent">
+                        <img src="./imgs/${element.toLowerCase()}.png"  style="margin-right:10px;">
+                        <span class="name">${element}</span>
+                    </div>`));
+                    if (index < elements[elementId].path.length - 1)
+                        pathDiv.append($(`<i class="right chevron icon divider" style="transform:translateY(2px)"></i>`));
+                });
+            });
+            return button;
+        }
 
+        const body = $(`<tbody></tbody>`);
+        let i = 0;
+        let row = $(`<tr></tr>`);
+        Object.keys(elements).forEach(elementId => {
+            const button = makeButton(elementId);
+
+            const cell = $(`<td></td>`);
+            cell.append(button);
+            row.append(cell);
+
+            i++;
+            if (i % 4 === 0) {
+                body.append(row);
+                row = $(`<tr></tr>`);
+            }
+        });
+        $('#buttonGrid').append(body);
     </script>
 
-
-
-
-
-    <!-- <script async defer></script> -->
 </body>
 
 </html>
