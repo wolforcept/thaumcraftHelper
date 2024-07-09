@@ -84,6 +84,12 @@
         .ui.table {
             background-color: #00000000;
         }
+
+        .path {
+            display: block;
+            background-color: #485563;
+            border-bottom: 2px solid black;
+        }
     </style>
 </head>
 
@@ -94,95 +100,274 @@
                 <img class="logo" src="./logo.png" style="margin-right: 20px;">
                 Thaumcraft Element Path Helper
             </div>
+            <div class="ui simple dropdown item">
+                Search Depth <i class="dropdown icon"></i>
+                <div class="menu">
+                    <a class="item" onclick="MAX_DEPTH=2">2</a>
+                    <a class="item" onclick="MAX_DEPTH=3">3</a>
+                    <a class="item" onclick="MAX_DEPTH=4">4</a>
+                    <a class="item" onclick="MAX_DEPTH=5">5</a>
+                    <a class="item" onclick="MAX_DEPTH=6">6</a>
+                </div>
+            </div>
         </div>
     </div>
 
 
     <div class="ui container">
         <table id="buttonGrid"></table>
-        <p id="path" style="margin: 1px 0 0 3px; width: 812px; background-color: #485563;min-height: 40px;"></p>
+        <div id="paths" style="margin: 1px 0 0 3px; width: 1220px; background-color: transparent; display: flex; flex-direction: column;"></div>
     </div>
 
     <script async defer>
 
-        const elements = {
-            Aer: { meaning: "air", components: [] },
-            Alienis: { meaning: "eldritch", components: ["Tenebrae", "Vacuos"] },
-            Aqua: { meaning: "water", components: [] },
-            Arbor: { meaning: "tree", components: ["Aer", "Herba"] },
-            Auram: { meaning: "aura", components: ["Aer", "Praecantatio"] },
-            Bestia: { meaning: "animal", components: ["Motus", "Victus"] },
-            Cognitio: { meaning: "mind", components: ["Ignis", "Spiritus"] },
-            Corpus: { meaning: "flesh", components: ["Bestia", "Mortuus"] },
-            Exanimis: { meaning: "undead", components: ["Motus", "Mortuus"] },
-            Fabrico: { meaning: "craft, repair", components: ["Humanus", "Instrumentum"] },
-            Fames: { meaning: "hunger", components: ["Vacuos", "Victus"] },
-            Gelum: { meaning: "cold, ice", components: ["Ignis", "Perditio"] },
-            Herba: { meaning: "plant", components: ["Terra", "Victus"] },
-            Humanus: { meaning: "human", components: ["Bestia", "Cognitio"] },
-            Ignis: { meaning: "fire", components: [] },
-            Instrumentum: { meaning: "tool", components: ["Humanus", "Ordo"] },
-            Iter: { meaning: "travel", components: ["Motus", "Terra"] },
-            Limus: { meaning: "slime", components: ["Aqua", "Victus"] },
-            Lucrum: { meaning: "greed, wealth", components: ["Fames", "Humanus"] },
-            Lux: { meaning: "light", components: ["Aer", "Ignis"] },
-            Machina: { meaning: "machine, device", components: ["Instrumentum", "Motus"] },
-            Messis: { meaning: "crop", components: ["Herba", "Humanus"] },
-            Metallum: { meaning: "metal", components: ["Terra", "Vitreus"] },
-            Meto: { meaning: "harvest", components: ["Instrumentum", "Messis"] },
-            Mortuus: { meaning: "death", components: ["Perditio", "Victus"] },
-            Motus: { meaning: "motion", components: ["Aer", "Ordo"] },
-            Ordo: { meaning: "order", components: [] },
-            Pannus: { meaning: "cloth", components: ["Bestia", "Instrumentum"] },
-            Perditio: { meaning: "chaos", components: [] },
-            Perfodio: { meaning: "mining", components: ["Humanus", "Terra"] },
-            Permutatio: { meaning: "exchange", components: ["Ordo", "Perditio"] },
-            Potentia: { meaning: "energy", components: ["Ignis", "Ordo"] },
-            Praecantatio: { meaning: "magic", components: ["Potentia", "Vacuos"] },
-            Sano: { meaning: "healing", components: ["Ordo", "Victus"] },
-            Sensus: { meaning: "senses", components: ["Aer", "Spiritus"] },
-            Spiritus: { meaning: "soul", components: ["Mortuus", "Victus"] },
-            Telum: { meaning: "weapon", components: ["Ignis", "Instrumentum"] },
-            Tempestas: { meaning: "weather", components: ["Aer", "Aqua"] },
-            Tenebrae: { meaning: "darkness", components: ["Lux", "Vacuos"] },
-            Terra: { meaning: "earth, ground", components: [] },
-            Tutamen: { meaning: "armor", components: ["Instrumentum", "Terra"] },
-            Vacuos: { meaning: "void", components: ["Aer", "Perditio"] },
-            Venenum: { meaning: "poison", components: ["Aqua", "Perditio"] },
-            Victus: { meaning: "life", components: ["Aqua", "Terra"] },
-            Vinculum: { meaning: "trap", components: ["Motus", "Perditio"] },
-            Vitium: { meaning: "taint", components: ["Perditio", "Praecantatio"] },
-            Vitreus: { meaning: "crystal", components: ["Ordo", "Terra"] },
-            Volatus: { meaning: "flight", components: ["Aer", "Motus"] },
+        var MAX_DEPTH = 4;
+        var SELECTED = "Aer";
+        const elementPaths = {};
+        const buttons = {};
+        const connections = {
+            "Aer": ["Arbor", "Auram", "Lux", "Motus", "Sensus", "Tempestas", "Vacuos", "Volatus"],
+            "Alienis": ["Tenebrae", "Vacuos"],
+            "Aqua": ["Limus", "Tempestas", "Venenum", "Victus"],
+            "Arbor": ["Aer", "Herba"],
+            "Auram": ["Aer", "Praecantatio"],
+            "Bestia": ["Motus", "Victus", "Corpus", "Humanus", "Pannus"],
+            "Cognitio": ["Ignis", "Spiritus", "Humanus"],
+            "Corpus": ["Bestia", "Mortuus"],
+            "Exanimis": ["Motus", "Mortuus"],
+            "Fabrico": ["Humanus", "Instrumentum"],
+            "Fames": ["Vacuos", "Victus", "Lucrum"],
+            "Gelum": ["Ignis", "Perditio"],
+            "Herba": ["Terra", "Victus", "Arbor", "Messis"],
+            "Humanus": ["Bestia", "Cognitio", "Fabrico", "Instrumentum", "Lucrum", "Messis", "Perfodio"],
+            "Ignis": ["Cognitio", "Gelum", "Lux", "Potentia", "Telum"],
+            "Instrumentum": ["Humanus", "Ordo", "Fabrico", "Machina", "Meto", "Pannus", "Telum", "Tutamen"],
+            "Iter": ["Motus", "Terra"],
+            "Limus": ["Aqua", "Victus"],
+            "Lucrum": ["Fames", "Humanus"],
+            "Lux": ["Aer", "Ignis", "Tenebrae"],
+            "Machina": ["Instrumentum", "Motus"],
+            "Messis": ["Herba", "Humanus", "Meto"],
+            "Metallum": ["Terra", "Vitreus"],
+            "Meto": ["Instrumentum", "Messis"],
+            "Mortuus": ["Perditio", "Victus", "Corpus", "Exanimis", "Spiritus"],
+            "Motus": ["Aer", "Ordo", "Bestia", "Exanimis", "Iter", "Machina", "Vinculum", "Volatus"],
+            "Ordo": ["Instrumentum", "Motus", "Permutatio", "Potentia", "Sano", "Vitreus"],
+            "Pannus": ["Bestia", "Instrumentum"],
+            "Perditio": ["Gelum", "Mortuus", "Permutatio", "Vacuos", "Venenum", "Vinculum", "Vitium"],
+            "Perfodio": ["Humanus", "Terra"],
+            "Permutatio": ["Ordo", "Perditio"],
+            "Potentia": ["Ignis", "Ordo", "Praecantatio"],
+            "Praecantatio": ["Potentia", "Vacuos", "Auram", "Vitium"],
+            "Sano": ["Ordo", "Victus"],
+            "Sensus": ["Aer", "Spiritus"],
+            "Spiritus": ["Mortuus", "Victus", "Cognitio", "Sensus"],
+            "Telum": ["Ignis", "Instrumentum"],
+            "Tempestas": ["Aer", "Aqua"],
+            "Tenebrae": ["Lux", "Vacuos", "Alienis"],
+            "Terra": ["Herba", "Iter", "Metallum", "Perfodio", "Tutamen", "Victus", "Vitreus"],
+            "Tutamen": ["Instrumentum", "Terra"],
+            "Vacuos": ["Aer", "Perditio", "Alienis", "Fames", "Praecantatio", "Tenebrae"],
+            "Venenum": ["Aqua", "Perditio"],
+            "Victus": ["Aqua", "Terra", "Bestia", "Fames", "Herba", "Limus", "Mortuus", "Sano", "Spiritus"],
+            "Vinculum": ["Motus", "Perditio"],
+            "Vitium": ["Perditio", "Praecantatio"],
+            "Vitreus": ["Ordo", "Terra", "Metallum"],
+            "Volatus": ["Aer", "Motus"]
         };
+        const keys = Object.keys(connections);
 
-        function lightSubElements(element1id, range, path) {
+        function getAllPaths(source, destination) {
+            let isVisited = [];
+            let localPathList = [];
+            let allPaths = [];
 
-            const element1 = elements[element1id];
-            const part1 = element1.components[0];
-            const part2 = element1.components[1];
-            const button1 = element1.button;
+            localPathList.push(source);
+            getAllPathsRecursive(allPaths, source, destination, isVisited, localPathList, 0);
 
-            Object.keys(elements).forEach(element2id => {
+            allPaths.sort((a, b) => a.length - b.length);
+            return allPaths;
+        }
 
-                const element2 = elements[element2id];
-                const button2 = element2.button;
-                const subpart1 = element2.components[0];
-                const subpart2 = element2.components[1];
+        function getAllPathsRecursive(allPaths, source, destination, isVisited, localPathList, depth) {
+            if (source === destination) {
+                allPaths.push([...localPathList])
+                return;
+            }
 
-                if ((
-                    (element2id === part1 || element2id === part2) ||
-                    (subpart1 === element1id || subpart2 === element1id)
-                )
-                ) {
-                    const newPath = [...path, element2id];
-                    if (element2.path.length === 0 || newPath.length < element2.path.length) {
-                        button2.addClass("range" + range);
-                        element2.path = newPath
-                        if (range > -3) lightSubElements(element2id, range - 1, newPath);
-                    }
+            isVisited[source] = true;
+
+            for (let i = 0; i < connections[source].length; i++) {
+                if (!isVisited[connections[source][i]]) {
+
+                    localPathList.push(connections[source][i]);
+                    if (depth < MAX_DEPTH)
+                        getAllPathsRecursive(allPaths, connections[source][i], destination, isVisited, localPathList, depth + 1);
+
+                    localPathList.splice(localPathList.indexOf(connections[source][i]), 1);
                 }
+            }
+
+            isVisited[source] = false;
+        }
+
+        // const elements2 = {
+        //     Aer: { meaning: "air", components: [] },
+        //     Alienis: { meaning: "eldritch", components: ["Tenebrae", "Vacuos"] },
+        //     Aqua: { meaning: "water", components: [] },
+        //     Arbor: { meaning: "tree", components: ["Aer", "Herba"] },
+        //     Auram: { meaning: "aura", components: ["Aer", "Praecantatio"] },
+        //     Bestia: { meaning: "animal", components: ["Motus", "Victus"] },
+        //     Cognitio: { meaning: "mind", components: ["Ignis", "Spiritus"] },
+        //     Corpus: { meaning: "flesh", components: ["Bestia", "Mortuus"] },
+        //     Exanimis: { meaning: "undead", components: ["Motus", "Mortuus"] },
+        //     Fabrico: { meaning: "craft, repair", components: ["Humanus", "Instrumentum"] },
+        //     Fames: { meaning: "hunger", components: ["Vacuos", "Victus"] },
+        //     Gelum: { meaning: "cold, ice", components: ["Ignis", "Perditio"] },
+        //     Herba: { meaning: "plant", components: ["Terra", "Victus"] },
+        //     Humanus: { meaning: "human", components: ["Bestia", "Cognitio"] },
+        //     Ignis: { meaning: "fire", components: [] },
+        //     Instrumentum: { meaning: "tool", components: ["Humanus", "Ordo"] },
+        //     Iter: { meaning: "travel", components: ["Motus", "Terra"] },
+        //     Limus: { meaning: "slime", components: ["Aqua", "Victus"] },
+        //     Lucrum: { meaning: "greed, wealth", components: ["Fames", "Humanus"] },
+        //     Lux: { meaning: "light", components: ["Aer", "Ignis"] },
+        //     Machina: { meaning: "machine, device", components: ["Instrumentum", "Motus"] },
+        //     Messis: { meaning: "crop", components: ["Herba", "Humanus"] },
+        //     Metallum: { meaning: "metal", components: ["Terra", "Vitreus"] },
+        //     Meto: { meaning: "harvest", components: ["Instrumentum", "Messis"] },
+        //     Mortuus: { meaning: "death", components: ["Perditio", "Victus"] },
+        //     Motus: { meaning: "motion", components: ["Aer", "Ordo"] },
+        //     Ordo: { meaning: "order", components: [] },
+        //     Pannus: { meaning: "cloth", components: ["Bestia", "Instrumentum"] },
+        //     Perditio: { meaning: "chaos", components: [] },
+        //     Perfodio: { meaning: "mining", components: ["Humanus", "Terra"] },
+        //     Permutatio: { meaning: "exchange", components: ["Ordo", "Perditio"] },
+        //     Potentia: { meaning: "energy", components: ["Ignis", "Ordo"] },
+        //     Praecantatio: { meaning: "magic", components: ["Potentia", "Vacuos"] },
+        //     Sano: { meaning: "healing", components: ["Ordo", "Victus"] },
+        //     Sensus: { meaning: "senses", components: ["Aer", "Spiritus"] },
+        //     Spiritus: { meaning: "soul", components: ["Mortuus", "Victus"] },
+        //     Telum: { meaning: "weapon", components: ["Ignis", "Instrumentum"] },
+        //     Tempestas: { meaning: "weather", components: ["Aer", "Aqua"] },
+        //     Tenebrae: { meaning: "darkness", components: ["Lux", "Vacuos"] },
+        //     Terra: { meaning: "earth, ground", components: [] },
+        //     Tutamen: { meaning: "armor", components: ["Instrumentum", "Terra"] },
+        //     Vacuos: { meaning: "void", components: ["Aer", "Perditio"] },
+        //     Venenum: { meaning: "poison", components: ["Aqua", "Perditio"] },
+        //     Victus: { meaning: "life", components: ["Aqua", "Terra"] },
+        //     Vinculum: { meaning: "trap", components: ["Motus", "Perditio"] },
+        //     Vitium: { meaning: "taint", components: ["Perditio", "Praecantatio"] },
+        //     Vitreus: { meaning: "crystal", components: ["Ordo", "Terra"] },
+        //     Volatus: { meaning: "flight", components: ["Aer", "Motus"] },
+        // };
+
+        // Object.keys(elements).forEach(element1 => {
+        //     const conns = [];
+        //     Object.keys(elements).forEach(element2 => {
+        //         if (elements[element2].components.includes(element1))
+        //             conns.push(element2);
+        //     });
+        //     elements[element1].connections = [...elements[element1].components, ...conns];
+        // });
+
+        // Object.keys(elements).forEach(element1 => {
+        //     // delete elements[element1].meaning;
+        //     // delete elements[element1].components;
+        //     elements[element1] = elements[element1].connections;
+        // });
+
+        // console.log(JSON.stringify(elements));
+
+        // function followPath() {
+
+        // }
+
+        // function lightSubElements(element1id, range, path) {
+
+        //     const element1 = elements[element1id];
+        //     const part1 = element1.components[0];
+        //     const part2 = element1.components[1];
+        //     const button1 = element1.button;
+
+        //     Object.keys(elements).forEach(element2id => {
+
+        //         const element2 = elements[element2id];
+        //         const paths = element2.paths;
+        //         const button2 = element2.button;
+        //         const subpart1 = element2.components[0];
+        //         const subpart2 = element2.components[1];
+
+        //         const countPart1 = path.filter(x => x == part1).length;
+        //         const countPart2 = path.filter(x => x == part2).length;
+
+        //         if (element2id === part1 && countPart1 < 1) {
+        //             const newPath = [...path, element2id];
+        //             paths.push(newPath);
+        //             button2.addClass("range" + range);
+        //             if (range > -1) lightSubElements(element2id, range - 1, newPath);
+        //         }
+
+        //         if (element2id === part2 && countPart2 < 1) {
+        //             const newPath = [...path, element2id];
+        //             paths.push(newPath);
+        //             button2.addClass("range" + range);
+        //             if (range > -1) lightSubElements(element2id, range - 1, newPath);
+        //         }
+
+        //         // if ((
+        //         //     (element2id === part1 || element2id === part2) ||
+        //         //     (subpart1 === element1id || subpart2 === element1id)
+        //         // ) && !path.includes(element1id)
+        //         // ) {
+        //         //     const newPath = [...path, element2id];
+        //         //     paths.push(newPath);
+        //         //     // if (element2.path.length === 0 || newPath.length < element2.path.length) {
+        //         //     // button2.addClass("range" + range);
+        //         //     if (range > -1) lightSubElements(element2id, range - 1, newPath);
+        //         //     // }
+        //         // }
+        //     });
+        // }
+
+        function makePathDiv(path, elementId) {
+
+            const pathDiv = $(`<div class="path"></div>`);
+
+            path.forEach((e, index) => {
+
+                pathDiv.append($(`
+                <div class="ui label" style="margin-right:10px; background-color:transparent">
+                    <img src="./imgs/${e.toLowerCase()}.png"  style="margin-right:10px;">
+                    <span class="name">${e}</span>
+                    </div>`));
+                if (index < path.length - 1 && path.length > 1)
+                    pathDiv.append($(`<i class="right chevron icon divider" style="transform:translateY(2px)"></i>`));
             });
+
+            return pathDiv;
+        }
+
+        function onButtonClick(elementId) {
+
+            keys.forEach(e => {
+                buttons[e].removeClass("selected");
+                buttons[e].removeClass("range3");
+                buttons[e].removeClass("range2");
+                buttons[e].removeClass("range1");
+            });
+            buttons[SELECTED].addClass("selected");
+            buttons[elementId].addClass("selected");
+
+            keys.forEach(e2 => {
+                elementPaths[e2] = getAllPaths(elementId, e2);
+            });
+
+            const pathsDiv = $('#paths');
+            pathsDiv.empty();
+            elementPaths[SELECTED]?.forEach(path => pathsDiv.append(makePathDiv(path, SELECTED)));
+
+            SELECTED = elementId;
         }
 
         function makeButton(elementId) {
@@ -191,40 +376,15 @@
                 <img src="./imgs/${elementId.toLowerCase()}.png">
                 <span class="name">${elementId}</span>
             </button>`);
-            button.on('click', () => {
-
-                Object.keys(elements).forEach(e => {
-                    elements[e].path = [];
-                    elements[e].button.removeClass("selected");
-                    elements[e].button.removeClass("range3");
-                    elements[e].button.removeClass("range2");
-                    elements[e].button.removeClass("range1");
-                });
-                button.addClass("selected");
-                lightSubElements(elementId, 3, [elementId]);
-            });
-            elements[elementId].button = button;
-            button.on("mouseenter", () => {
-                if (elements[elementId].path.length === 0) return;
-                const pathDiv = $('#path');
-                pathDiv.empty();
-                elements[elementId].path.forEach((element, index) => {
-                    pathDiv.append($(`
-                    <div class="ui label" style="margin-right:10px; background-color:transparent">
-                        <img src="./imgs/${element.toLowerCase()}.png"  style="margin-right:10px;">
-                        <span class="name">${element}</span>
-                    </div>`));
-                    if (index < elements[elementId].path.length - 1)
-                        pathDiv.append($(`<i class="right chevron icon divider" style="transform:translateY(2px)"></i>`));
-                });
-            });
+            buttons[elementId] = button;
+            button.on('click', () => onButtonClick(elementId));
             return button;
         }
 
         const body = $(`<tbody></tbody>`);
         let i = 0;
         let row = $(`<tr></tr>`);
-        Object.keys(elements).forEach(elementId => {
+        Object.keys(connections).forEach(elementId => {
             const button = makeButton(elementId);
 
             const cell = $(`<td></td>`);
@@ -232,12 +392,14 @@
             row.append(cell);
 
             i++;
-            if (i % 4 === 0) {
+            if (i % 6 === 0) {
                 body.append(row);
                 row = $(`<tr></tr>`);
             }
         });
         $('#buttonGrid').append(body);
+
+        onButtonClick("Aer");
     </script>
 
 </body>
