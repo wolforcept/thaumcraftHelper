@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <title>******</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,200..800;1,200..800&display=swap');
+
+        body {
+            background-color: #222223;
+            font-family: "Karla", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 200;
+            font-style: normal;
+        }
+    </style>
+    <!-- <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0; user-scalable=0;"> -->
+    <!-- <link rel="manifest" href="/manifest.json"> -->
+    <!-- <link rel="stylesheet" href="style.css"> -->
+
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <!-- JQuery UI -->
+    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.min.js" integrity="sha256-sw0iNNXmOJbQhYFuC9OF2kOlD5KQKe1y5lfBn4C9Sjg=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/ui-darkness/jquery-ui.css">
+    <!-- P5 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js" integrity="sha512-d6sc8kbZEtA2LwB9m/ck0FhvyUwVfdmvTeyJRprmj7Wg9wRFtHDIpr6qk4g/y3Ix3O9I6KHIv6SGu9f7RaP1Gw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Semantic UI -->
+    <!-- GET THEMES HERE: https://semantic-ui-forest.com/themes/ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.js" integrity="sha512-Xo0Jh8MsOn72LGV8kU5LsclG7SUzJsWGhXbWcYs2MAmChkQzwiW/yTQwdJ8w6UA9C6EVG18GHb/TrYpYCjyAQw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.css" integrity="sha512-KXol4x3sVoO+8ZsWPFI/r5KBVB/ssCGB5tsv2nVOKwLg33wTFP3fmnXa47FdSVIshVTgsYk/1734xSk9aFIa4A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" href="semantic.superhero.min.css" />
+
+    <style>
+        .element {
+            width: 300px;
+            position: relative;
+        }
+
+        .element img {
+            margin-right: 20px;
+            width: 32px;
+        }
+
+        .element .name {
+            width: 100px;
+            display: inline-block;
+            transform: translateY(-10px);
+        }
+
+        .element .path {
+            position: absolute;
+            background-color: rgb(116, 116, 116);
+            padding: 10px;
+            left: 0;
+            width: 100%;
+            /* top: 100%; */
+            z-index: 1;
+            opacity: 0;
+        }
+
+        .element:hover .path.exists {
+            opacity: 1;
+        }
+
+        .element.range1 {
+            background-color: rgb(161, 73, 70);
+        }
+
+        .element.range2 {
+            background-color: rgb(216, 163, 83);
+        }
+
+        .element.range3 {
+            background-color: rgb(187, 238, 120);
+        }
+
+        .element.selected {
+            background-color: rgb(11, 228, 228);
+        }
+    </style>
+</head>
+
+<body>
+    <script async defer>
+
+        const elements = {
+            Aer: { meaning: "air", components: [] },
+            Alienis: { meaning: "eldritch", components: ["Tenebrae", "Vacuos"] },
+            Aqua: { meaning: "water", components: [] },
+            Arbor: { meaning: "tree", components: ["Aer", "Herba"] },
+            Auram: { meaning: "aura", components: ["Aer", "Praecantatio"] },
+            Bestia: { meaning: "animal", components: ["Motus", "Victus"] },
+            Cognitio: { meaning: "mind", components: ["Ignis", "Spiritus"] },
+            Corpus: { meaning: "flesh", components: ["Bestia", "Mortuus"] },
+            Exanimis: { meaning: "undead", components: ["Motus", "Mortuus"] },
+            Fabrico: { meaning: "craft, repair", components: ["Humanus", "Instrumentum"] },
+            Fames: { meaning: "hunger", components: ["Vacuos", "Victus"] },
+            Gelum: { meaning: "cold, ice", components: ["Ignis", "Perditio"] },
+            Herba: { meaning: "plant", components: ["Terra", "Victus"] },
+            Humanus: { meaning: "human", components: ["Bestia", "Cognitio"] },
+            Ignis: { meaning: "fire", components: [] },
+            Instrumentum: { meaning: "tool", components: ["Humanus", "Ordo"] },
+            Iter: { meaning: "travel", components: ["Motus", "Terra"] },
+            Limus: { meaning: "slime", components: ["Aqua", "Victus"] },
+            Lucrum: { meaning: "greed, wealth", components: ["Fames", "Humanus"] },
+            Lux: { meaning: "light", components: ["Aer", "Ignis"] },
+            Machina: { meaning: "machine, device", components: ["Instrumentum", "Motus"] },
+            Messis: { meaning: "crop", components: ["Herba", "Humanus"] },
+            Metallum: { meaning: "metal", components: ["Terra", "Vitreus"] },
+            Meto: { meaning: "harvest", components: ["Instrumentum", "Messis"] },
+            Mortuus: { meaning: "death", components: ["Perditio", "Victus"] },
+            Motus: { meaning: "motion", components: ["Aer", "Ordo"] },
+            Ordo: { meaning: "order", components: [] },
+            Pannus: { meaning: "cloth", components: ["Bestia", "Instrumentum"] },
+            Perditio: { meaning: "chaos", components: [] },
+            Perfodio: { meaning: "mining", components: ["Humanus", "Terra"] },
+            Permutatio: { meaning: "exchange", components: ["Ordo", "Perditio"] },
+            Potentia: { meaning: "energy", components: ["Ignis", "Ordo"] },
+            Praecantatio: { meaning: "magic", components: ["Potentia", "Vacuos"] },
+            Sano: { meaning: "healing", components: ["Ordo", "Victus"] },
+            Sensus: { meaning: "senses", components: ["Aer", "Spiritus"] },
+            Spiritus: { meaning: "soul", components: ["Mortuus", "Victus"] },
+            Telum: { meaning: "weapon", components: ["Ignis", "Instrumentum"] },
+            Tempestas: { meaning: "weather", components: ["Aer", "Aqua"] },
+            Tenebrae: { meaning: "darkness", components: ["Lux", "Vacuos"] },
+            Terra: { meaning: "earth, ground", components: [] },
+            Tutamen: { meaning: "armor", components: ["Instrumentum", "Terra"] },
+            Vacuos: { meaning: "void", components: ["Aer", "Perditio"] },
+            Venenum: { meaning: "poison", components: ["Aqua", "Perditio"] },
+            Victus: { meaning: "life", components: ["Aqua", "Terra"] },
+            Vinculum: { meaning: "trap", components: ["Motus", "Perditio"] },
+            Vitium: { meaning: "taint", components: ["Perditio", "Praecantatio"] },
+            Vitreus: { meaning: "crystal", components: ["Ordo", "Terra"] },
+            Volatus: { meaning: "flight", components: ["Aer", "Motus"] },
+        };
+
+        (function ($) {
+
+            jQuery.fn.extend({
+                prependClass: function (newClasses) {
+                    return this.each(function () {
+                        var currentClasses = $(this).prop("class");
+                        $(this).removeClass(currentClasses).addClass(newClasses + " " + currentClasses);
+                    });
+                }
+            });
+
+        })(jQuery);
+
+        function lightSubElements(element1id, range, path) {
+
+            const element1 = elements[element1id];
+            const part1 = element1.components[0];
+            const part2 = element1.components[1];
+            const button1 = element1.button;
+
+            Object.keys(elements).forEach(element2id => {
+
+                const element2 = elements[element2id];
+                const button2 = element2.button;
+                const subpart1 = element2.components[0];
+                const subpart2 = element2.components[1];
+
+                if ((
+                    (element2id === part1 || element2id === part2) ||
+                    (subpart1 === element1id || subpart2 === element1id)
+                ) && !path.includes(element2id)
+                ) {
+                    button2.addClass("range" + range);
+                    const newPath = [...path, element2id];
+                    element2.setPath(newPath);
+                    if (range > 1) lightSubElements(element2id, range - 1, newPath);
+                }
+            });
+        }
+
+        let i = 0;
+        Object.keys(elements).forEach(elementId => {
+            const button1 = $(`
+            <button class="ui button element">
+                <img src="./imgs/${elementId}.png">
+                <span class="name">${elementId}</span>
+                <span class="path">test</span>
+            </button>`);
+            button1.on('click', () => {
+
+                Object.keys(elements).forEach(e => {
+                    elements[e].setPath([]);
+                    elements[e].button.removeClass("selected");
+                    elements[e].button.removeClass("range3");
+                    elements[e].button.removeClass("range2");
+                    elements[e].button.removeClass("range1");
+                });
+                button1.addClass("selected");
+                lightSubElements(elementId, 3, [elementId]);
+            });
+            elements[elementId].button = button1;
+            elements[elementId].setPath = (path) => {
+                const pathObj = button1.find(".path");
+                if (path.length === 0) {
+                    pathObj.removeClass("exists");
+                } else {
+                    pathObj.addClass("exists");
+                    pathObj.html(path.join("→"))
+                }
+            };
+            $("body").append(button1);
+            i++;
+            if (i % 4 == 0) $("body").append(`<br />`);
+        });
+
+    </script>
+
+
+
+
+
+    <!-- <script async defer></script> -->
+</body>
+
+</html>
