@@ -44,41 +44,18 @@
         }
 
         .ui.button.element .name {
-            width: 100px;
+            width: 120px;
             display: inline-block;
             transform: translateY(-10px);
-        }
-
-        .ui.button.element .path {
-            position: absolute;
-            background-color: inherit;
-            color: white;
-            padding: 10px;
-            left: 0;
-            width: 100%;
-            /* top: 100%; */
-            z-index: 1;
-            opacity: 0;
+            text-align: left;
         }
 
         .ui.button.element:hover .path.exists {
             opacity: 1;
         }
 
-        .ui.button.element.range1 {
-            background-color: rgb(161, 73, 70);
-        }
-
-        .ui.button.element.range2 {
-            background-color: rgb(216, 163, 83);
-        }
-
-        .ui.button.element.range3 {
-            background-color: rgb(127, 189, 47);
-        }
-
         .ui.button.element.selected {
-            background-color: rgb(11, 228, 228);
+            background-color: rgb(88, 172, 206);
         }
 
         .ui.table {
@@ -88,7 +65,11 @@
         .path {
             display: block;
             background-color: #485563;
-            border-bottom: 2px solid black;
+            margin-bottom: 4px;
+        }
+
+        *{
+            user-select: none;
         }
     </style>
 </head>
@@ -115,6 +96,7 @@
 
 
     <div class="ui container">
+        <div id="connections" style="margin: 1px 0 0 3px; width: 1220px; background-color: transparent; display: flex; flex-direction: row;"></div>
         <table id="buttonGrid"></table>
         <div id="paths" style="margin: 1px 0 0 3px; width: 1220px; background-color: transparent; display: flex; flex-direction: column;"></div>
     </div>
@@ -262,85 +244,16 @@
         //     Volatus: { meaning: "flight", components: ["Aer", "Motus"] },
         // };
 
-        // Object.keys(elements).forEach(element1 => {
-        //     const conns = [];
-        //     Object.keys(elements).forEach(element2 => {
-        //         if (elements[element2].components.includes(element1))
-        //             conns.push(element2);
-        //     });
-        //     elements[element1].connections = [...elements[element1].components, ...conns];
-        // });
-
-        // Object.keys(elements).forEach(element1 => {
-        //     // delete elements[element1].meaning;
-        //     // delete elements[element1].components;
-        //     elements[element1] = elements[element1].connections;
-        // });
-
-        // console.log(JSON.stringify(elements));
-
-        // function followPath() {
-
-        // }
-
-        // function lightSubElements(element1id, range, path) {
-
-        //     const element1 = elements[element1id];
-        //     const part1 = element1.components[0];
-        //     const part2 = element1.components[1];
-        //     const button1 = element1.button;
-
-        //     Object.keys(elements).forEach(element2id => {
-
-        //         const element2 = elements[element2id];
-        //         const paths = element2.paths;
-        //         const button2 = element2.button;
-        //         const subpart1 = element2.components[0];
-        //         const subpart2 = element2.components[1];
-
-        //         const countPart1 = path.filter(x => x == part1).length;
-        //         const countPart2 = path.filter(x => x == part2).length;
-
-        //         if (element2id === part1 && countPart1 < 1) {
-        //             const newPath = [...path, element2id];
-        //             paths.push(newPath);
-        //             button2.addClass("range" + range);
-        //             if (range > -1) lightSubElements(element2id, range - 1, newPath);
-        //         }
-
-        //         if (element2id === part2 && countPart2 < 1) {
-        //             const newPath = [...path, element2id];
-        //             paths.push(newPath);
-        //             button2.addClass("range" + range);
-        //             if (range > -1) lightSubElements(element2id, range - 1, newPath);
-        //         }
-
-        //         // if ((
-        //         //     (element2id === part1 || element2id === part2) ||
-        //         //     (subpart1 === element1id || subpart2 === element1id)
-        //         // ) && !path.includes(element1id)
-        //         // ) {
-        //         //     const newPath = [...path, element2id];
-        //         //     paths.push(newPath);
-        //         //     // if (element2.path.length === 0 || newPath.length < element2.path.length) {
-        //         //     // button2.addClass("range" + range);
-        //         //     if (range > -1) lightSubElements(element2id, range - 1, newPath);
-        //         //     // }
-        //         // }
-        //     });
-        // }
-
         function makePathDiv(path, elementId) {
 
             const pathDiv = $(`<div class="path"></div>`);
 
             path.forEach((e, index) => {
 
-                pathDiv.append($(`
-                <div class="ui label" style="margin-right:10px; background-color:transparent">
+                pathDiv.append($(`<div class="ui label" style="margin-right:10px; background-color:transparent">
                     <img src="./imgs/${e.toLowerCase()}.png"  style="margin-right:10px;">
                     <span class="name">${e}</span>
-                    </div>`));
+                </div>`));
                 if (index < path.length - 1 && path.length > 1)
                     pathDiv.append($(`<i class="right chevron icon divider" style="transform:translateY(2px)"></i>`));
             });
@@ -348,7 +261,30 @@
             return pathDiv;
         }
 
+        function makeConnectionsDiv(elementId) {
+
+            const conns = connections[elementId];
+            const connDiv = $(`#connections`);
+            connDiv.empty();
+
+            connDiv.append($(`<div class="ui label" style="margin-right:10px; background-color: #4e5d6c;">
+                    <img src="./imgs/${elementId.toLowerCase()}.png"  style="margin-right:10px;">
+                    <span class="name">${elementId} Connections:</span>
+                </div>`));
+
+            conns.forEach((e, index) => {
+
+                connDiv.append($(`<div class="ui label" style="margin-right:10px; background-color:transparent">
+                    <img src="./imgs/${e.toLowerCase()}.png"  style="margin-right:10px;">
+                    <span class="name">${e}</span>
+                </div>`));
+            });
+
+        }
+
         function onButtonClick(elementId) {
+
+            makeConnectionsDiv(elementId);
 
             keys.forEach(e => {
                 buttons[e].removeClass("selected");
@@ -371,10 +307,9 @@
         }
 
         function makeButton(elementId) {
-            const button = $(`
-            <button class="ui button element">
-                <img src="./imgs/${elementId.toLowerCase()}.png">
+            const button = $(`<button class="ui button element">
                 <span class="name">${elementId}</span>
+                <img src="./imgs/${elementId.toLowerCase()}.png">
             </button>`);
             buttons[elementId] = button;
             button.on('click', () => onButtonClick(elementId));
