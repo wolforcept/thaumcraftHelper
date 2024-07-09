@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>******</title>
+    <title>Thaumcraft Helper</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,200..800;1,200..800&display=swap');
 
@@ -80,7 +80,6 @@
         .element.selected {
             background-color: rgb(11, 228, 228);
         }
-        
     </style>
 </head>
 
@@ -182,7 +181,7 @@
         Object.keys(elements).forEach(elementId => {
             const button1 = $(`
             <button class="ui button element">
-                <img src="./imgs/${elementId}.png">
+                <img src="./imgs/${elementId.toLowerCase()}.png">
                 <span class="name">${elementId}</span>
                 <span class="path">test</span>
             </button>`);
